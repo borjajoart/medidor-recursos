@@ -107,10 +107,13 @@ pub fn compute(pid: u32, prev: Option<i64>, ts: &[i64], dt_secs: f64, freq: f64)
         }
         last = Some(t);
     }
-    let fps = (ts.len() as f64 / dt_secs.max(0.1)) as f32;
+    // Con tiempos de fotograma se usa su media: contar eventos por ventana de muestreo
+    // da saltos (49, 61...) según dónde caiga el corte.
     if frames.is_empty() {
+        let fps = (ts.len() as f64 / dt_secs.max(0.1)) as f32;
         return Some(FpsSample { pid, fps, low1: fps, frametime_max: 0.0, stutters: 0 });
     }
+    let fps = 1000.0 * frames.len() as f32 / frames.iter().sum::<f32>();
     let mut sorted = frames.clone();
     sorted.sort_by(f32::total_cmp);
     let median = sorted[sorted.len() / 2];

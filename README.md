@@ -166,7 +166,7 @@ El manual para usuarios no técnicos (cómo leer el informe y qué hacer según 
   - Necesitan administrador (sesión ETW en tiempo real).
   - Solo DirectX 9/10/11/12 (eventos *Present* de DXGI y D3D9). **Vulkan y OpenGL no se cuentan**; con esos juegos el informe sale sin FPS.
   - Se cuentan las llamadas a *Present* del proceso, igual que PresentMon en su modo básico: con generación de fotogramas (DLSS 3/FSR 3) o VSync forzado por el driver la cifra puede no coincidir con la del overlay.
-  - No se ha podido probar en el equipo de desarrollo (sin juegos DirectX a mano con permisos de administrador); el cálculo está cubierto por tests, la captura ETW no.
+  - Probado con una animación WebGL en Edge (DirectX por debajo): 60 FPS estables a 60 Hz y los parones al cambiar de ventana se detectan. No se ha probado con juegos reales ni con anticheat.
 - **Temperaturas dependientes de LibreHardwareMonitor.** Sin él: GPU NVIDIA por NVML, GPU AMD/Intel sin datos, CPU solo con la zona ACPI (requiere administrador y en sobremesa suele ser un valor fijo sin sentido; el informe lo avisa). Leer los sensores directamente exigiría instalar un driver de kernel, que es justo lo que hace LibreHardwareMonitor.
 - **Sensores sin validar en hardware variado.** Se ha desarrollado en un i5-6500 + Radeon RX 560 sin LibreHardwareMonitor. Los nombres de los sensores cambian entre placas y versiones, así que en algún equipo puede faltar algún valor (consumo, frecuencia, ventiladores). Si pasa, abre un issue con una captura de LibreHardwareMonitor.
 - **Ventiladores:** un ventilador a 0 rpm solo se señala si coincide con temperatura alta (muchos se paran solos en reposo). Algunos conectores de la placa aparecen aunque no tengan nada conectado.
