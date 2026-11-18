@@ -30,27 +30,35 @@ Opcional, para no tener que acordarte: en LibreHardwareMonitor activa *Options �
 
 ---
 
-## 2. Uso rápido (doble clic)
+## 2. Uso rápido: la ventana del programa
 
-En la carpeta hay tres archivos `.bat`:
+Abre **`medidor-gui.exe`** con doble clic. No hace falta usar la consola.
 
-| Archivo | Qué hace |
-|---|---|
-| **1 - Monitorizar (con ventana).bat** | Abre una ventana que muestra los datos en directo. Juega normalmente y, al terminar, pulsa **Ctrl+C** en esa ventana. Se genera el informe y se abre en el navegador. (Después Windows puede preguntar «¿Desea terminar el trabajo por lotes?»: responde **S**.) |
-| **2 - Monitorizar en segundo plano.bat** | Arranca el monitor **sin ventana**. Puedes cerrar todo y jugar. |
-| **3 - Detener y ver informe.bat** | Detiene el monitor en segundo plano, genera el informe y lo abre. |
+![Ventana del programa](captura-gui.png)
+
+- **Estado**: indica si está monitorizando y muestra en directo el tiempo transcurrido, el uso y la temperatura de CPU y GPU, la RAM, el proceso que más CPU gasta y la ventana activa.
+- **Sensores**: indica si LibreHardwareMonitor está abierto (se comprueba cada 15 s). El botón **Descargar LibreHardwareMonitor** abre su página.
+- **Opciones**:
+  - **Duración**: hasta que lo detengas, o 15 min a 4 h (se para solo y genera el informe).
+  - **Tomar una muestra cada**: 1, 2 (recomendado) o 5 segundos.
+  - **Temperatura alta de CPU / GPU**: a partir de qué temperatura se considera calentamiento (85 °C y 83 °C por defecto).
+  - **Abrir el informe al terminar**.
+- **Iniciar monitorización** / **Detener y generar informe**.
+- **Último informe**: abre el informe más reciente. **Carpeta de informes**: abre la carpeta en el Explorador. **Manual**: abre este manual.
+
+**Puedes cerrar la ventana** mientras juegas: la monitorización sigue en segundo plano. Para detenerla, vuelve a abrir `medidor-gui.exe` y pulsa **Detener y generar informe**.
 
 Flujo típico para cazar las bajadas de FPS:
 
 1. Abre LibreHardwareMonitor (como administrador).
-2. Doble clic en **2 - Monitorizar en segundo plano.bat**.
+2. Abre `medidor-gui.exe` y pulsa **Iniciar monitorización**. Puedes cerrar la ventana.
 3. Juega como siempre, al menos 30–60 minutos. **Apunta la hora** si notas una bajada de FPS fuerte.
-4. Al terminar, doble clic en **3 - Detener y ver informe.bat**.
+4. Al terminar, abre `medidor-gui.exe` y pulsa **Detener y generar informe**. El informe se abre en el navegador.
 5. En el informe, pasa el ratón por las gráficas a la hora que apuntaste.
 
 Los informes se guardan en la carpeta **`informes`**, junto al programa.
 
-> Si cierras la ventana con la X en vez de usar Ctrl+C, no pasa nada grave: el informe se guarda automáticamente cada 5 minutos y el CSV se escribe en cada muestra.
+> Si el PC se apaga o el proceso se cierra a la fuerza, no se pierde todo: el informe se guarda automáticamente cada 5 minutos y el CSV se escribe en cada muestra.
 
 ---
 
@@ -100,7 +108,7 @@ Muchos procesos conocidos traen una explicación y qué hacer (por ejemplo `MsMp
 
 ## 5. Uso desde la consola (opciones avanzadas)
 
-Abre una terminal en la carpeta del programa:
+No es necesario: todo lo básico se hace desde la ventana. Para quien prefiera la consola o quiera automatizarlo existe `medidor-recursos.exe`. Abre una terminal en la carpeta del programa:
 
 ```bash
 medidor-recursos.exe --duracion 1h
@@ -159,7 +167,7 @@ No directamente. Por eso es útil apuntar la hora de las bajadas y buscarla en l
 Horas sin problema. En sesiones muy largas las gráficas se resumen (conservando los picos) para que el informe no pese demasiado; el análisis y el CSV usan todos los datos.
 
 **«Ya hay un monitor en marcha».**
-Solo puede haber uno a la vez. Ejecuta **3 - Detener y ver informe.bat** o `medidor-recursos.exe detener`.
+Solo puede haber uno a la vez. Pulsa **Detener y generar informe** en la ventana (o ejecuta `medidor-recursos.exe detener`).
 
 ---
 

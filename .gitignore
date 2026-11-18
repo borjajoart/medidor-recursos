@@ -1,6 +1,6 @@
 /target
 informes/
 # El ejecutable se distribuye en las Releases de GitHub, no en el repositorio
-/distribuir/medidor-recursos.exe
+/distribuir/*.exe
 /distribuir/informe_ejemplo.html
 *.zip

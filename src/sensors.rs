@@ -265,3 +265,8 @@ fn fill_from_hwmon(r: &mut Readings, list: &[HwSensor], hw_names: &BTreeMap<Stri
         }
     }
 }
+
+/// ¿Está LibreHardwareMonitor/OpenHardwareMonitor publicando sensores ahora mismo?
+pub fn hwmon_available() -> bool {
+    connect_hwmon().is_some()
+}

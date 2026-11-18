@@ -101,23 +101,31 @@ fn pid_file() -> PathBuf {
     control_dir().join("medidor-recursos.pid")
 }
 
-/// Devuelve (pid, ruta del informe) del monitor en marcha, si lo hay.
-fn running_monitor() -> Option<(u32, String)> {
+/// Monitor en marcha según el archivo de control.
+pub struct Running {
+    pub pid: u32,
+    pub report: PathBuf,
+    pub csv: PathBuf,
+}
+
+/// Devuelve el monitor en marcha, si lo hay.
+pub fn running_monitor() -> Option<Running> {
     let content = fs::read_to_string(pid_file()).ok()?;
     let mut lines = content.lines();
     let pid: u32 = lines.next()?.trim().parse().ok()?;
-    let report = lines.next().unwrap_or("").to_string();
+    let report = PathBuf::from(lines.next().unwrap_or(""));
+    let csv = PathBuf::from(lines.next().unwrap_or(""));
     let mut sys = System::new().ok()?;
     let p = Pid::from_u32(pid);
     sys.refresh_processes(ProcessesToUpdate::Some(&[p]), true);
     let proc_ = sys.process(p)?;
-    proc_.name().to_string_lossy().to_lowercase().contains("medidor").then_some((pid, report))
+    proc_.name().to_string_lossy().to_lowercase().contains("medidor").then_some(Running { pid, report, csv })
 }
 
 pub fn print_status() -> i32 {
     match running_monitor() {
-        Some((pid, report)) => {
-            println!("Monitor en marcha (PID {pid}).\nInforme: {report}");
+        Some(r) => {
+            println!("Monitor en marcha (PID {}).\nInforme: {}", r.pid, r.report.display());
             0
         }
         None => {
@@ -127,42 +135,52 @@ pub fn print_status() -> i32 {
     }
 }
 
-pub fn request_stop() -> i32 {
-    let Some((pid, report)) = running_monitor() else {
-        println!("No hay ningún monitor en marcha.");
+/// Pide al monitor que se detenga y espera a que guarde el informe. Devuelve su ruta.
+pub fn stop_and_wait(timeout: Duration) -> Result<PathBuf, String> {
+    let Some(r) = running_monitor() else {
         let _ = fs::remove_file(pid_file());
-        return 1;
+        return Err("No hay ningún monitor en marcha.".into());
     };
-    if let Err(e) = File::create(stop_file()) {
-        eprintln!("No se pudo enviar la orden de parada: {e}");
-        return 1;
-    }
-    println!("Deteniendo el monitor (PID {pid}) y generando el informe...");
+    File::create(stop_file()).map_err(|e| format!("No se pudo enviar la orden de parada: {e}"))?;
     let t = Instant::now();
-    while t.elapsed() < Duration::from_secs(60) {
+    while t.elapsed() < timeout {
         if running_monitor().is_none() {
-            println!("Listo. Informe: {report}");
-            return 0;
+            return Ok(r.report);
         }
         std::thread::sleep(Duration::from_millis(300));
     }
-    eprintln!("El monitor no ha respondido en 60 s.");
-    1
+    Err(format!("El monitor no ha respondido en {} s.", timeout.as_secs()))
 }
 
-pub fn spawn_background(args: &[String]) -> i32 {
+pub fn request_stop() -> i32 {
+    if running_monitor().is_some() {
+        println!("Deteniendo el monitor y generando el informe...");
+    }
+    match stop_and_wait(Duration::from_secs(60)) {
+        Ok(report) => {
+            println!("Listo. Informe: {}", report.display());
+            0
+        }
+        Err(e) => {
+            println!("{e}");
+            1
+        }
+    }
+}
+
+/// Lanza este mismo ejecutable como monitor sin ventana (`--hijo`). Devuelve el PID.
+pub fn spawn_child(args: &[String]) -> Result<u32, String> {
     use std::os::windows::process::CommandExt;
     const DETACHED_PROCESS: u32 = 0x0000_0008;
     const CREATE_NEW_PROCESS_GROUP: u32 = 0x0000_0200;
 
-    if let Some((pid, _)) = running_monitor() {
-        eprintln!("Ya hay un monitor en marcha (PID {pid}). Usa 'medidor-recursos detener' primero.");
-        return 1;
+    if let Some(r) = running_monitor() {
+        return Err(format!("Ya hay un monitor en marcha (PID {}). Detenlo primero.", r.pid));
     }
-    let exe = std::env::current_exe().expect("ruta del ejecutable");
+    let exe = std::env::current_exe().map_err(|e| e.to_string())?;
     let rest: Vec<&String> = args.iter().filter(|a| *a != "-b" && *a != "--segundo-plano").collect();
     let dir = exe.parent().map(Path::to_path_buf).unwrap_or_default();
-    match std::process::Command::new(&exe)
+    std::process::Command::new(&exe)
         .args(rest)
         .arg("--hijo")
         .current_dir(dir)
@@ -171,17 +189,8 @@ pub fn spawn_background(args: &[String]) -> i32 {
         .stderr(std::process::Stdio::null())
         .creation_flags(DETACHED_PROCESS | CREATE_NEW_PROCESS_GROUP)
         .spawn()
-    {
-        Ok(child) => {
-            println!("Monitor iniciado en segundo plano (PID {}).", child.id());
-            println!("Para terminar y generar el informe: medidor-recursos detener");
-            0
-        }
-        Err(e) => {
-            eprintln!("No se pudo iniciar en segundo plano: {e}");
-            1
-        }
-    }
+        .map(|c| c.id())
+        .map_err(|e| format!("No se pudo iniciar el monitor: {e}"))
 }
 
 fn lower_priority() {
@@ -229,7 +238,8 @@ pub fn run(cfg: Config) {
     let report_path = cfg.out_dir.join(format!("informe_{stamp}.html"));
     let csv_path = cfg.out_dir.join(format!("datos_{stamp}.csv"));
     let report_abs = std::path::absolute(&report_path).unwrap_or(report_path.clone());
-    let _ = fs::write(pid_file(), format!("{}\n{}\n", std::process::id(), report_abs.display()));
+    let csv_abs = std::path::absolute(&csv_path).unwrap_or(csv_path.clone());
+    let _ = fs::write(pid_file(), format!("{}\n{}\n{}\n", std::process::id(), report_abs.display(), csv_abs.display()));
 
     let say = |s: &str| {
         if !cfg.quiet {
@@ -514,7 +524,7 @@ pub fn run(cfg: Config) {
                 println!("Datos CSV en:        {}", std::path::absolute(&csv_path).unwrap_or(csv_path).display());
             }
             if cfg.open_report {
-                open_in_browser(&report_abs);
+                open_path(&report_abs);
             }
         }
         Err(e) => eprintln!("No se pudo guardar el informe: {e}"),
@@ -526,7 +536,8 @@ fn finish_stats(s: &mut Session, own_cpu_sum: f64) {
     s.own_cpu_avg = (own_cpu_sum / s.samples.len().max(1) as f64) as f32;
 }
 
-fn open_in_browser(path: &Path) {
+/// Abre un archivo o carpeta con el programa predeterminado de Windows.
+pub fn open_path(path: &Path) {
     use std::os::windows::process::CommandExt;
     const CREATE_NO_WINDOW: u32 = 0x0800_0000;
     let _ = std::process::Command::new("cmd")

@@ -2,10 +2,12 @@
 
 Monitor ligero para Windows, escrito en Rust, que ayuda a averiguar **por qué un PC tiene bajadas de FPS**: ¿se calienta?, ¿hay un proceso en segundo plano que se come la CPU?, ¿se llena la RAM?
 
-Se deja funcionando (con ventana o en segundo plano) mientras se juega. Al terminar genera un **informe HTML con gráficas interactivas y un diagnóstico automático**, además de un CSV con todas las muestras.
+Se inicia desde una **ventana sencilla** (o desde la consola), se deja funcionando en segundo plano mientras se juega y al terminar genera un **informe HTML con gráficas interactivas y un diagnóstico automático**, además de un CSV con todas las muestras.
 
-- Ejecutable de ~800 KB, sin instalación ni dependencias.
-- Consumo medido: **~0,5 % de CPU y ~15 MB de RAM**, con prioridad de proceso baja.
+![Interfaz](distribuir/captura-gui.png)
+
+- Dos ejecutables de ~850 KB, sin instalación ni dependencias: `medidor-gui.exe` (ventana) y `medidor-recursos.exe` (consola).
+- Consumo medido del monitor: **~0,5 % de CPU y ~15 MB de RAM**, con prioridad de proceso baja. La ventana ocupa ~13 MB y se puede cerrar sin detener la monitorización.
 - El informe es un único archivo HTML que funciona sin internet.
 
 ## Qué mide y qué te dice
@@ -36,7 +38,7 @@ Hay un informe de ejemplo con datos simulados en [`ejemplo/informe_ejemplo.html`
 
 1. Ve a [Releases](../../releases) y descarga `medidor-recursos-windows.zip`.
 2. Descomprímelo en cualquier carpeta.
-3. La primera vez, Windows SmartScreen puede avisar porque el exe no está firmado: *Más información → Ejecutar de todas formas*.
+3. Abre **`medidor-gui.exe`**. La primera vez, Windows SmartScreen puede avisar porque el exe no está firmado: *Más información → Ejecutar de todas formas*.
 
 ### Opción B: compilar desde el código
 
@@ -54,7 +56,7 @@ cd medidor-recursos
 cargo build --release
 ```
 
-El ejecutable queda en `target\release\medidor-recursos.exe`. Cópialo a la carpeta [`distribuir`](distribuir), junto a los `.bat` y el manual, y esa carpeta ya está lista para usar o pasar a otra persona.
+Se generan dos ejecutables en `target\release\`: `medidor-gui.exe` (interfaz) y `medidor-recursos.exe` (consola). Cópialos a la carpeta [`distribuir`](distribuir), junto al manual, y esa carpeta ya está lista para usar o pasar a otra persona. `build.rs` incrusta en la interfaz el manifiesto de Windows (`res/medidor-gui.manifest`), necesario para que arranque.
 
 ### Temperaturas: LibreHardwareMonitor (recomendado)
 
@@ -68,17 +70,23 @@ Sin él, todo lo demás funciona; la GPU solo se lee si es NVIDIA (ver [Limitaci
 
 ## Probarlo
 
-**1. Prueba rápida (1 minuto):**
+**1. Con la interfaz (lo normal):**
+
+1. Abre `medidor-gui.exe`.
+2. Elige **Duración: 15 minutos** (o déjalo en «Hasta que lo detenga») y pulsa **Iniciar monitorización**.
+3. En **Estado** debe aparecer «Monitorizando» y, cada pocos segundos, el uso de CPU/GPU/RAM, el proceso que más consume y la ventana activa. En **Sensores** se ve si LibreHardwareMonitor está detectado.
+4. Abre algo pesado (un juego, un benchmark, un vídeo 4K…) para ver cómo reacciona. Puedes cerrar la ventana: el monitor sigue funcionando.
+5. Vuelve a abrir `medidor-gui.exe` y pulsa **Detener y generar informe**. El informe se abre en el navegador y queda en la carpeta `informes` (botones **Último informe** y **Carpeta de informes**).
+
+En la cabecera del informe, la línea **«Sensores»** indica qué fuentes de temperatura se han usado; si pone «ninguna», LibreHardwareMonitor no estaba abierto o no estaba como administrador.
+
+**2. Con la consola (prueba de 1 minuto):**
 
 ```bash
 medidor-recursos.exe --duracion 1m --intervalo 1
 ```
 
-La consola muestra una línea en directo (`CPU 23% 61°C | GPU 40% 55°C | RAM 48% | proceso top`). Al terminar se abre el informe en el navegador y se guarda en la carpeta `informes`. En la cabecera del informe, la línea **«Sensores»** indica qué fuentes de temperatura se han detectado; si pone «ninguna», LibreHardwareMonitor no está abierto o no está como administrador.
-
-Para ver cómo reacciona, durante esa prueba abre algo pesado (un juego, un benchmark, un vídeo 4K…).
-
-**2. Modo segundo plano:**
+Muestra una línea en directo (`CPU 23% 61°C | GPU 40% 55°C | RAM 48% | proceso top`) y al terminar abre el informe. Para el modo segundo plano:
 
 ```bash
 medidor-recursos.exe --segundo-plano
@@ -92,7 +100,7 @@ medidor-recursos.exe estado
 medidor-recursos.exe detener
 ```
 
-`detener` espera a que se guarde el informe y lo abre. Con doble clic: `2 - Monitorizar en segundo plano.bat` y `3 - Detener y ver informe.bat`.
+La interfaz y la consola comparten el mismo monitor: se puede iniciar en una y detener en la otra.
 
 **3. Tests y el informe de ejemplo:**
 
@@ -100,9 +108,13 @@ medidor-recursos.exe detener
 cargo test
 ```
 
-Comprueba el parser de duraciones y genera `ejemplo/informe_ejemplo.html` con una sesión simulada: juego que calienta la CPU hasta 102 °C con throttling y un análisis del antivirus en segundo plano. Sirve para ver todas las secciones del informe sin necesidad de tener sensores.
+Comprueba el análisis de argumentos y genera `ejemplo/informe_ejemplo.html` con una sesión simulada: juego que calienta la CPU hasta 102 °C con throttling y un análisis del antivirus en segundo plano. Sirve para ver todas las secciones del informe sin necesidad de tener sensores.
 
 ## Uso
+
+Desde la interfaz, todo está en la ventana: duración, intervalo, umbrales de temperatura, iniciar/detener, abrir el último informe, la carpeta de informes y el manual.
+
+Desde la consola:
 
 ```text
 medidor-recursos [opciones]     Monitoriza hasta Ctrl+C (o hasta --duracion)
@@ -142,16 +154,26 @@ Conviene tenerlas en cuenta al interpretar un informe:
 - **Sesiones largas.** Las gráficas se reducen a 2000 puntos conservando los picos; el análisis y el CSV usan todas las muestras. Varias horas generan un HTML de pocos MB.
 - **Un monitor a la vez.** Los archivos de control (`medidor-recursos.pid` / `.stop`) están en `%TEMP%`.
 - **Ejecutable sin firma.** SmartScreen y algunos antivirus pueden avisar la primera vez.
+- **Interfaz básica.** Ventana Win32 de tamaño fijo, sin icono propio ni icono en la bandeja del sistema: para ver el estado o detener hay que volver a abrir `medidor-gui.exe`. Los datos en directo se leen del CSV del monitor, así que se actualizan al ritmo del intervalo elegido. El botón **Manual** abre `MANUAL.md` en el Bloc de notas (sin formato).
 
 ## Estructura del proyecto
 
 ```text
 src/
-  main.rs        Argumentos de línea de comandos y subcomandos
-  monitor.rs     Bucle de muestreo, procesos, picos, CSV, segundo plano (detener/estado)
-  sensors.rs     LibreHardwareMonitor/OpenHardwareMonitor (WMI), NVIDIA NVML, ACPI
-  report.rs      Análisis (episodios, throttling, culpables, diagnóstico) y HTML
-  informe.html   Plantilla del informe (CSS + JS de las gráficas, sin dependencias)
-distribuir/      Carpeta para usuarios: .bat de doble clic y MANUAL.md (el .exe va en Releases)
-ejemplo/         Informe de ejemplo generado por `cargo test`
+  lib.rs             Librería compartida por los dos ejecutables
+  cli.rs             Opciones y análisis de argumentos
+  monitor.rs         Bucle de muestreo, procesos, picos, CSV, control en segundo plano (detener/estado)
+  sensors.rs         LibreHardwareMonitor/OpenHardwareMonitor (WMI), NVIDIA NVML, ACPI
+  report.rs          Análisis (episodios, throttling, culpables, diagnóstico) y HTML
+  informe.html       Plantilla del informe (CSS + JS de las gráficas, sin dependencias)
+  main.rs            Ejecutable de consola (medidor-recursos.exe)
+  bin/medidor-gui.rs Interfaz gráfica nativa Win32 (medidor-gui.exe), con native-windows-gui
+res/                 Manifiesto de Windows de la interfaz (controles comunes v6, DPI)
+build.rs             Incrusta el manifiesto al compilar
+distribuir/          Carpeta para usuarios: MANUAL.md y captura (los .exe van en Releases)
+ejemplo/             Informe de ejemplo generado por `cargo test`
 ```
+
+## Licencia
+
+[MIT](LICENSE).
