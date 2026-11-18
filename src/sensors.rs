@@ -22,10 +22,14 @@ pub struct Readings {
     pub gpu_power: Option<f32>,
     pub gpu_clock: Option<f32>,
     pub gpu_mem: Option<f32>,
+    /// VRAM total (MB)
+    pub gpu_mem_total: Option<f32>,
     /// true si la GPU (NVIDIA) informa de limitación térmica/energética en este instante
     pub gpu_throttle: bool,
     /// Otras temperaturas (discos, placa base...)
     pub others: BTreeMap<String, f32>,
+    /// Ventiladores (RPM), solo con LibreHardwareMonitor
+    pub fans: BTreeMap<String, f32>,
 }
 
 #[derive(Deserialize, Debug)]
@@ -183,6 +187,9 @@ impl Sensors {
                 if r.gpu_mem.is_none() {
                     r.gpu_mem = dev.memory_info().ok().map(|m| (m.used / 1_048_576) as f32);
                 }
+                if r.gpu_mem_total.is_none() {
+                    r.gpu_mem_total = dev.memory_info().ok().map(|m| (m.total / 1_048_576) as f32);
+                }
                 if let Ok(reasons) = dev.current_throttle_reasons() {
                     r.gpu_throttle = reasons.intersects(
                         T::SW_THERMAL_SLOWDOWN | T::HW_THERMAL_SLOWDOWN | T::HW_SLOWDOWN | T::HW_POWER_BRAKE_SLOWDOWN,
@@ -250,6 +257,16 @@ fn fill_from_hwmon(r: &mut Readings, list: &[HwSensor], hw_names: &BTreeMap<Stri
         r.gpu_power = find("Power", &["GPU Package", "GPU Power", "Package", "Total"]);
         r.gpu_clock = find("Clock", &["GPU Core", "Core"]);
         r.gpu_mem = find("SmallData", &["GPU Memory Used", "D3D Dedicated Memory Used", "Memory Used"]);
+        r.gpu_mem_total = find("SmallData", &["GPU Memory Total", "D3D Dedicated Memory Total", "Memory Total"]);
+    }
+
+    // --- Ventiladores ---
+    for s in list.iter().filter(|s| s.sensor_type == "Fan" && s.value >= 0.0) {
+        let hw = hw_names.get(&s.parent).cloned().unwrap_or_else(|| s.parent.clone());
+        let label = if gpu_rank(&s.identifier).is_some() { format!("GPU · {}", s.name) } else { format!("{hw} · {}", s.name) };
+        if r.fans.len() < 8 {
+            r.fans.insert(label, s.value);
+        }
     }
 
     // --- Otras temperaturas: discos y placa base ---

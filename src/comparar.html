@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Comparación de sesiones</title>
+<style>{{CSS}}
+.better{color:var(--green);font-weight:600}.worse{color:var(--red);font-weight:600}
+.ab{display:grid;grid-template-columns:1fr 1fr;gap:0 40px;margin-bottom:8px}
+.ab div{border-top:3px solid var(--s1);padding-top:6px}.ab div+div{border-top-color:var(--s2)}
+.ab b{display:block;font-family:var(--mono);font-size:14px}.ab span{color:var(--muted);font-size:13px}
+</style>
+</head>
+<body>
+<main>
+<div class="kicker"><span>Medidor de recursos · comparación</span><span>A frente a B</span></div>
+<h1>Comparación de dos sesiones</h1>
+<div class="ab"><div><b>A · {{A}}</b><span>{{AINFO}}</span></div><div><b>B · {{B}}</b><span>{{BINFO}}</span></div></div>
+
+<h2>Valores</h2>
+<p class="muted">Medias y máximos de cada sesión. La diferencia es la media de B menos la de A; en verde si mejora.</p>
+<div class="tw"><table><tr><th>Métrica</th><th class="n">A media</th><th class="n">A máx.</th><th class="n">B media</th><th class="n">B máx.</th><th class="n">B − A</th></tr>{{ROWS}}</table></div>
+
+<h2>Superpuestas</h2>
+<p class="muted">El eje horizontal es el tiempo desde el inicio de cada sesión. A en línea continua, B en discontinua.</p>
+<div class="block" id="w-fps"><h3>FPS</h3><div id="c-fps"></div></div>
+<div class="block" id="w-ct"><h3>Temperatura CPU</h3><div id="c-ct"></div></div>
+<div class="block" id="w-gt"><h3>Temperatura GPU</h3><div id="c-gt"></div></div>
+<div class="block" id="w-cpu"><h3>Uso de CPU</h3><div id="c-cpu"></div></div>
+<div class="block" id="w-clk"><h3>Frecuencia CPU</h3><div id="c-clk"></div></div>
+</main>
+<script>{{CHARTS}}</script>
+<script>
+const D = {{DATA}};
+const col = i => getComputedStyle(document.documentElement).getPropertyValue("--s" + i).trim();
+const pair = (id, k, unit, o) => chart("c-" + id, Object.assign({ unit, hide: "w-" + id, gap: 30, snap: 4, series: [
+  { n: "A", c: col(1), pts: D["a_" + k] }, { n: "B", c: col(2), pts: D["b_" + k], dash: true }] }, o || {}));
+pair("fps", "fps", "");
+pair("ct", "cpu_temp", " °C", { auto: true });
+pair("gt", "gpu_temp", " °C", { auto: true });
+pair("cpu", "cpu_%", " %", { max: 100 });
+pair("clk", "cpu_mhz", " MHz");
+</script>
+</body>
+</html>

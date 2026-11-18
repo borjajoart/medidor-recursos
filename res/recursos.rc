@@ -1,0 +1,6 @@
+// Iconos: 1 = aplicación (lo usa Windows para el .exe), 2-5 = bandeja por estado.
+1 ICON "icono.ico"
+2 ICON "verde.ico"
+3 ICON "naranja.ico"
+4 ICON "rojo.ico"
+5 ICON "gris.ico"

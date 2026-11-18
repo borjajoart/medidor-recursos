@@ -4,3 +4,4 @@ informes/
 /distribuir/*.exe
 /distribuir/informe_ejemplo.html
 *.zip
+/.claude

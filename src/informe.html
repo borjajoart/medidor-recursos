@@ -3,131 +3,94 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Informe de rendimiento {{FECHA}} {{INICIO}}</title>
-<style>
-:root{--bg:#f6f7f9;--card:#fff;--fg:#1c2330;--dim:#667085;--line:#e3e6eb;--grid:#eceef2;
---grave:#c62828;--grave-bg:#fdecea;--aviso:#b26a00;--aviso-bg:#fff4e0;--ok:#2e7d32;--ok-bg:#e8f5e9;--info:#1f5fa8;--info-bg:#e8f0fb;
---c1:#2563eb;--c2:#ea580c;--c3:#dc2626;--c4:#16a34a;--c5:#7c3aed;--c6:#0891b2;--c7:#a16207;--c8:#db2777;--c9:#64748b;}
-@media (prefers-color-scheme:dark){:root{--bg:#0f1318;--card:#171c23;--fg:#e6e9ee;--dim:#98a2b3;--line:#2a313b;--grid:#222932;
---grave:#ff6b6b;--grave-bg:#3a1d1d;--aviso:#ffb74d;--aviso-bg:#3a2c14;--ok:#66bb6a;--ok-bg:#1b2e1d;--info:#64a8ff;--info-bg:#17263a;
---c1:#60a5fa;--c2:#fb923c;--c3:#f87171;--c4:#4ade80;--c5:#a78bfa;--c6:#22d3ee;--c7:#facc15;--c8:#f472b6;--c9:#94a3b8;}}
-*{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--fg);font:14px/1.5 "Segoe UI",system-ui,sans-serif}
-main{max-width:1180px;margin:0 auto;padding:24px 16px 60px}
-h1{font-size:24px;margin:0 0 4px}h2{font-size:17px;margin:0 0 12px}h3{font-size:15px;margin:0 0 2px}
-.meta{color:var(--dim);margin-bottom:20px}.meta b{color:var(--fg);font-weight:600}
-.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:18px;margin-bottom:18px}
-.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:18px}
-.kpi{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px}
-.kl{color:var(--dim);font-size:12px;text-transform:uppercase;letter-spacing:.04em}.kv{font-size:24px;font-weight:650;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.ks{color:var(--dim);font-size:12px}
-.find{display:flex;gap:12px;padding:12px;border-radius:8px;margin-bottom:8px;align-items:flex-start}
-.find p{margin:0}.find .tag{font-size:11px;font-weight:700;text-transform:uppercase;padding:2px 8px;border-radius:99px;flex:none;margin-top:2px;min-width:52px;text-align:center}
-.grave{background:var(--grave-bg)}.grave .tag{background:var(--grave);color:#fff}
-.aviso{background:var(--aviso-bg)}.aviso .tag{background:var(--aviso);color:#fff}
-.ok{background:var(--ok-bg)}.ok .tag{background:var(--ok);color:#fff}
-.info{background:var(--info-bg)}.info .tag{background:var(--info);color:#fff}
-@media (prefers-color-scheme:dark){.find .tag{color:#111}}
-.legend{display:flex;flex-wrap:wrap;gap:4px 14px;margin:-4px 0 8px;font-size:13px}
-.legend span{display:inline-flex;align-items:center;gap:6px}.legend i{width:14px;height:3px;border-radius:2px;display:inline-block}
-.legend .band i{height:10px;opacity:.5}
-.chart{position:relative}.chart svg{width:100%;height:auto;display:block;overflow:visible}
-.chart text{fill:var(--dim);font-size:11px}
-.tip{position:absolute;pointer-events:none;background:var(--card);border:1px solid var(--line);border-radius:8px;padding:8px 10px;font-size:12px;box-shadow:0 4px 16px rgba(0,0,0,.18);min-width:190px;display:none;z-index:5}
-.tip b{font-weight:600}.tip .row{display:flex;justify-content:space-between;gap:12px}.tip hr{border:0;border-top:1px solid var(--line);margin:6px 0}
-table{border-collapse:collapse;width:100%;font-size:13px}th,td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--line);vertical-align:top}
-th{color:var(--dim);font-weight:600;font-size:12px}td.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
-.tw{overflow-x:auto}.dim{color:var(--dim)}.desc{color:var(--dim);font-size:12px}
-.two{display:grid;grid-template-columns:1fr 1fr;gap:18px}@media(max-width:800px){.two{grid-template-columns:1fr}}
-.two .card{margin-bottom:0}.foot{color:var(--dim);font-size:12px;margin-top:24px}
-</style>
+<title>{{TITULO}}</title>
+<style>{{CSS}}</style>
 </head>
 <body>
 <main>
-<h1>Informe de rendimiento</h1>
-<div class="meta"><b>{{FECHA}}</b> de {{INICIO}} a {{FIN}} · duración <b>{{DURACION}}</b> · {{MUESTRAS}} muestras cada {{INTERVALO}} s<br>{{EQUIPO}}<br>Sensores: {{FUENTES}}</div>
+<div class="kicker"><span>Medidor de recursos · sesión</span><span>{{FECHA}}</span></div>
+<h1>{{H1}}</h1>
+<p class="sub">{{SUB}}</p>
+<p class="verdict">{{VEREDICTO}}</p>
 
-<div class="kpis">{{KPIS}}</div>
+<h2>Resumen</h2>
+<dl class="kv">{{KV}}</dl>
 
-<div class="card"><h2>Diagnóstico</h2>{{FINDINGS}}</div>
+<h2>Hallazgos</h2>
+<ol class="findings">{{FINDINGS}}</ol>
 
-<div class="card"><h2>Temperaturas</h2><div id="c-temp"></div></div>
-<div class="card"><h2>Uso de CPU, GPU y RAM</h2><div id="c-use"></div></div>
-<div class="card" id="w-clk"><h2>Frecuencias</h2><div id="c-clk"></div></div>
-<div class="card" id="w-pow"><h2>Consumo eléctrico</h2><div id="c-pow"></div></div>
-<div class="card"><h2>Disco (lectura/escritura de todos los procesos)</h2><div id="c-disk"></div></div>
+<h2>Línea de tiempo</h2>
+<p class="muted">Pasa el ratón por encima para ver qué ocurría en cada instante. Las líneas punteadas son las marcas (Ctrl+Alt+M); las franjas, los episodios.</p>
+<div class="block" id="w-fps"><h3>FPS</h3><div id="c-fps"></div></div>
+<div class="block"><h3>Temperaturas</h3><div id="c-temp"></div></div>
+<div class="block"><h3>Uso</h3><div id="c-use"></div></div>
+<div class="block" id="w-clk"><h3>Frecuencias</h3><div id="c-clk"></div></div>
+<div class="block" id="w-pow"><h3>Consumo</h3><div id="c-pow"></div></div>
+<div class="block" id="w-fan"><h3>Ventiladores</h3><div id="c-fan"></div></div>
+<div class="block" id="w-net"><h3>Ping</h3><div id="c-net"></div></div>
+<div class="block"><h3>Tráfico de red</h3><div id="c-traf"></div></div>
+<div class="block"><h3>Disco</h3><div id="c-disk"></div></div>
 
-<div class="card"><h2>Episodios detectados</h2>{{EPISODIOS}}</div>
+{{MARCAS}}
+{{CAIDAS}}
 
-<div class="card"><h2>Procesos que más CPU consumieron</h2>
-<p class="dim">% sobre el total de la CPU. «2º plano» = consumo medio mientras ese programa no era la ventana activa. «Primer plano» = % del tiempo que fue la ventana activa.</p>
-<div class="tw"><table><tr><th>Proceso</th><th>CPU media</th><th>CPU máx.</th><th>CPU 2º plano</th><th>RAM máx.</th><th>Disco total</th><th>Primer plano</th></tr>{{PROCS}}</table></div></div>
+<h2>Episodios de temperatura y carga</h2>
+{{EPISODIOS}}
 
-<div class="two">
-<div class="card"><h2>Picos de CPU en segundo plano</h2>{{SPIKES}}</div>
-<div class="card"><h2>Ventanas activas (primer plano)</h2><div class="tw"><table><tr><th>Programa</th><th>Tiempo</th><th>%</th></tr>{{FG}}</table></div>
-<h2 style="margin-top:20px">Más memoria RAM</h2><div class="tw"><table><tr><th>Proceso</th><th>Media</th><th>Máx.</th></tr>{{MEM}}</table></div></div>
+<h2>Procesos</h2>
+<p class="muted">Porcentajes sobre el total del equipo. «2º plano» es el consumo medio mientras el programa no era la ventana activa.</p>
+<div class="tw"><table><tr><th>Proceso</th><th class="n">CPU media</th><th class="n">CPU máx.</th><th class="n">2º plano</th><th class="n">GPU media</th><th class="n">GPU máx.</th><th class="n">RAM máx.</th><th class="n">Disco</th><th class="n">Activa</th></tr>{{PROCS}}</table></div>
+
+<div class="cols">
+<div><h2>Picos en segundo plano</h2>{{SPIKES}}</div>
+<div><h2>Ventana activa</h2><div class="tw"><table><tr><th>Programa</th><th class="n">Tiempo</th><th class="n">%</th></tr>{{FG}}</table></div>
+<h2>Memoria</h2><div class="tw"><table><tr><th>Proceso</th><th class="n">Media</th><th class="n">Máx.</th></tr>{{MEM}}</table></div></div>
 </div>
 
-<div class="foot">El propio monitor consumió {{OWN}}. Datos completos muestra a muestra en <b>{{CSV}}</b> (se abre con Excel).</div>
+<div class="foot"><dl>{{FOOT}}</dl></div>
 </main>
+<script>{{CHARTS}}</script>
 <script>
-const D={{DATA}};const S=D.s;const NS="http://www.w3.org/2000/svg";
-const W=1000,H=250,ML=48,MR=14,MT=10,MB=26;
-const charts=[];
-const col=i=>`var(--c${i})`;
-function fmtT(t){t=Math.round(t);const h=Math.floor(t/3600),m=Math.floor(t/60)%60,s=t%60;return h?`${h}h${String(m).padStart(2,"0")}`:`${m}:${String(s).padStart(2,"0")}`}
-function nice(v){if(v<=0)return 1;const p=Math.pow(10,Math.floor(Math.log10(v)));for(const m of[1,2,2.5,5,10])if(m*p>=v)return m*p;return 10*p}
-function el(tag,attrs,parent){const e=document.createElementNS(NS,tag);for(const k in attrs)e.setAttribute(k,attrs[k]);if(parent)parent.appendChild(e);return e}
-function chart(id,unit,defs,opt){
-  opt=opt||{};const host=document.getElementById(id);
-  defs=defs.filter(d=>S.some(s=>d.get(s)!=null));
-  if(!defs.length){if(opt.hide)document.getElementById(opt.hide).style.display="none";else host.innerHTML='<p class="dim">Sin datos de sensores para esta gráfica.</p>';return}
-  const t0=S[0].t,t1=Math.max(S[S.length-1].t,t0+1);
-  let vmax=0,vmin=1e9;for(const s of S)for(const d of defs){const v=d.get(s);if(v!=null){vmax=Math.max(vmax,v);vmin=Math.min(vmin,v)}}
-  (opt.lines||[]).forEach(l=>vmax=Math.max(vmax,l.v));
-  let ymin=opt.auto?Math.max(0,vmin-5):0,ymax=opt.max||Math.max(vmax*1.05,ymin+1);
-  const step=nice((ymax-ymin)/4);ymin=Math.floor(ymin/step)*step;if(!opt.max)ymax=Math.ceil(ymax/step)*step;
-  const X=t=>ML+(t-t0)/(t1-t0)*(W-ML-MR),Y=v=>MT+(1-(v-ymin)/(ymax-ymin))*(H-MT-MB);
-  const lg=document.createElement("div");lg.className="legend";
-  lg.innerHTML=defs.map(d=>`<span><i style="background:${d.c}"></i>${d.n}</span>`).join("")+(opt.bandLegend?'<span class="band"><i style="background:var(--c3)"></i>CPU caliente</span><span class="band"><i style="background:var(--c2)"></i>GPU caliente</span><span class="band"><i style="background:var(--c5)"></i>CPU saturada</span>':"");
-  host.appendChild(lg);
-  const wrap=document.createElement("div");wrap.className="chart";host.appendChild(wrap);
-  const svg=el("svg",{viewBox:`0 0 ${W} ${H}`},wrap);
-  for(const b of D.bands){if(!opt.bands)break;const c=b.kind=="cpu"?"var(--c3)":b.kind=="gpu"?"var(--c2)":"var(--c5)";el("rect",{x:X(b.a),y:MT,width:Math.max(2,X(b.b)-X(b.a)),height:H-MT-MB,fill:c,opacity:.13},svg)}
-  for(let v=ymin;v<=ymax+1e-9;v+=opt.max?(ymax-ymin)/4:step){const y=Y(v);el("line",{x1:ML,x2:W-MR,y1:y,y2:y,stroke:"var(--grid)"},svg);const tx=el("text",{x:ML-6,y:y+4,"text-anchor":"end"},svg);tx.textContent=(Math.round(v*10)/10)+unit}
-  for(let i=0;i<=6;i++){const t=t0+(t1-t0)*i/6;const tx=el("text",{x:X(t),y:H-6,"text-anchor":i==0?"start":i==6?"end":"middle"},svg);let j=0;while(j<S.length-1&&S[j].t<t)j++;tx.textContent=S[j].h}
-  for(const l of opt.lines||[]){const y=Y(l.v);el("line",{x1:ML,x2:W-MR,y1:y,y2:y,stroke:l.c,"stroke-dasharray":"5 4","stroke-width":1.2,opacity:.8},svg);const tx=el("text",{x:W-MR-4,y:y-4,"text-anchor":"end"},svg);tx.textContent=l.n}
-  for(const d of defs){let p="",pen=false;for(const s of S){const v=d.get(s);if(v==null){pen=false;continue}p+=(pen?"L":"M")+X(s.t).toFixed(1)+" "+Y(Math.min(Math.max(v,ymin),ymax)).toFixed(1);pen=true}
-    el("path",{d:p,fill:"none",stroke:d.c,"stroke-width":1.6,"stroke-linejoin":"round"},svg)}
-  const cur=el("line",{y1:MT,y2:H-MB,stroke:"var(--dim)","stroke-width":1,opacity:0},svg);
-  const dots=defs.map(d=>el("circle",{r:3.5,fill:d.c,opacity:0},svg));
-  const tip=document.createElement("div");tip.className="tip";wrap.appendChild(tip);
-  const ch={X,Y,cur,dots,defs,tip,unit};charts.push(ch);
-  el("rect",{x:ML,y:MT,width:W-ML-MR,height:H-MT-MB,fill:"transparent"},svg);
-  svg.addEventListener("mousemove",e=>{const r=svg.getBoundingClientRect();const sx=(e.clientX-r.left)/r.width*W;const t=t0+(sx-ML)/(W-ML-MR)*(t1-t0);
-    let lo=0,hi=S.length-1;while(lo<hi){const m=(lo+hi)>>1;if(S[m].t<t)lo=m+1;else hi=m}if(lo>0&&Math.abs(S[lo-1].t-t)<Math.abs(S[lo].t-t))lo--;
-    showAll(lo,ch,e.clientX-r.left,e.clientY-r.top,r.width)});
-  svg.addEventListener("mouseleave",()=>charts.forEach(c=>{c.cur.setAttribute("opacity",0);c.dots.forEach(d=>d.setAttribute("opacity",0));c.tip.style.display="none"}));
+const D = {{DATA}};
+const S = D.s, M = D.marks;
+const col = i => getComputedStyle(document.documentElement).getPropertyValue("--s" + i).trim();
+const band = n => getComputedStyle(document.documentElement).getPropertyValue("--band-" + n).trim();
+const pts = f => S.filter(s => f(s) != null).map(s => [s.t, f(s)]);
+const bands = kinds => D.bands.filter(b => kinds.includes(b.kind)).map(b => ({ a: b.a, b: b.b, c: band(b.kind) }));
+const marks = M.map(m => ({ t: m.t, label: m.label }));
+const t0 = S.length ? S[0].t : 0, t1 = S.length ? S[S.length - 1].t : 1;
+const ST = S.map(s => [s.t]);
+function at(t) { return S[nearest(ST, t)]; }
+function tip(t) {
+  const s = at(t); if (!s) return "";
+  let h = `<div class="sec">Ventana activa</div><div>${esc(s.fg || "–")}</div>`;
+  if (s.fps != null) h += `<div class="row"><span>FPS · 1 % low</span><b>${s.fps.toFixed(0)} · ${(s.fl || 0).toFixed(0)}</b></div>` + (s.stut ? `<div class="row"><span>Tirones</span><b>${s.stut}</b></div>` : "");
+  h += `<div class="sec">CPU por proceso</div>`;
+  for (const [n, c] of s.top) h += `<div class="row"><span>${esc(n)}</span><span>${c.toFixed(1)} %</span></div>`;
+  if (s.gtop.length) { h += `<div class="sec">GPU por proceso</div>`; for (const [n, g] of s.gtop) h += `<div class="row"><span>${esc(n)}</span><span>${g.toFixed(0)} %</span></div>`; }
+  const m = M.find(m => Math.abs(m.t - s.t) <= D.interval);
+  if (m) h += `<div class="sec">Marca ${esc(m.label)}</div>`;
+  return h;
 }
-function esc(s){return String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]))}
-function showAll(i,src,mx,my,w){const s=S[i];
-  for(const c of charts){const x=c.X(s.t);c.cur.setAttribute("x1",x);c.cur.setAttribute("x2",x);c.cur.setAttribute("opacity",.6);
-    c.defs.forEach((d,k)=>{const v=d.get(s);const dot=c.dots[k];if(v==null){dot.setAttribute("opacity",0);return}dot.setAttribute("cx",x);dot.setAttribute("cy",c.Y(v));dot.setAttribute("opacity",1)});
-    if(c!==src)c.tip.style.display="none"}
-  let h=`<b>${s.h}</b> <span class="dim">(+${fmtT(s.t)})</span><hr>`;
-  for(const d of src.defs){const v=d.get(s);if(v!=null)h+=`<div class="row"><span style="color:${d.c}">${d.n}</span><b>${v.toFixed(v<10?1:0)}${src.unit}</b></div>`}
-  if(s.gthr)h+=`<div style="color:var(--grave)"><b>GPU limitada (throttling)</b></div>`;
-  h+=`<hr><div class="dim">Ventana activa</div><div>${esc(s.fg||"—")}</div><hr><div class="dim">Top procesos (CPU · RAM)</div>`;
-  for(const [n,c,m] of s.top)h+=`<div class="row"><span>${esc(n)}</span><span>${c.toFixed(1)}% · ${Math.round(m)} MB</span></div>`;
-  const t=src.tip;t.innerHTML=h;t.style.display="block";const tw=t.offsetWidth;t.style.left=(mx+16+tw>w?mx-tw-16:mx+16)+"px";t.style.top=Math.max(0,my-40)+"px"}
-if(!S.length){document.querySelectorAll(".chart,[id^=c-]").forEach(e=>e.innerHTML='<p class="dim">Sin muestras.</p>')}else{
-const others=[...new Set(S.flatMap(s=>Object.keys(s.ot)))];
-chart("c-temp"," °C",[{n:"CPU",c:col(1),get:s=>s.ct},{n:"GPU",c:col(2),get:s=>s.gt},{n:"GPU hot spot",c:col(3),get:s=>s.gh},
-  ...others.map((k,i)=>({n:k,c:col(4+i%6),get:s=>s.ot[k]}))],{auto:true,bands:true,bandLegend:true,lines:[{v:D.cpuLimit,n:"límite CPU "+D.cpuLimit+" °C",c:"var(--c1)"},{v:D.gpuLimit,n:"límite GPU "+D.gpuLimit+" °C",c:"var(--c2)"}]});
-chart("c-use"," %",[{n:"CPU",c:col(1),get:s=>s.cpu},{n:"GPU",c:col(2),get:s=>s.gl},{n:"RAM",c:col(4),get:s=>s.ram}],{max:100,bands:true,bandLegend:true});
-chart("c-clk"," MHz",[{n:"CPU (media núcleos)",c:col(1),get:s=>s.cc},{n:"GPU",c:col(2),get:s=>s.gc}],{hide:"w-clk",bands:true});
-chart("c-pow"," W",[{n:"CPU",c:col(1),get:s=>s.cw},{n:"GPU",c:col(2),get:s=>s.gw}],{hide:"w-pow"});
-chart("c-disk"," MB/s",[{n:"Lectura",c:col(6),get:s=>s.dr},{n:"Escritura",c:col(5),get:s=>s.dw}]);}
+const common = { clock: D.clock, marks, tip, t0, t1, snap: D.interval * 1.5, gap: D.interval * 4 };
+if (!S.length) { document.querySelectorAll("[id^=c-]").forEach(e => e.innerHTML = '<p class="muted">Sin muestras.</p>'); } else {
+  const others = [...new Set(S.flatMap(s => Object.keys(s.ot)))];
+  const fans = [...new Set(S.flatMap(s => Object.keys(s.fan)))];
+  chart("c-fps", { ...common, unit: "", hide: "w-fps", bands: bands(["fps"]), series: [
+    { n: "FPS", c: col(1), pts: pts(s => s.fps) }, { n: "1 % low", c: col(2), pts: pts(s => s.fl), w: 1 }] });
+  chart("c-temp", { ...common, unit: " °C", auto: true, bands: bands(["cpu", "gpu"]),
+    lines: [{ v: D.cpuLimit, n: "CPU " + D.cpuLimit + " °C", c: col(1) }, { v: D.gpuLimit, n: "GPU " + D.gpuLimit + " °C", c: col(2) }],
+    series: [{ n: "CPU", c: col(1), pts: pts(s => s.ct) }, { n: "GPU", c: col(2), pts: pts(s => s.gt) }, { n: "GPU hot spot", c: col(3), pts: pts(s => s.gh), w: 1 },
+      ...others.map((k, i) => ({ n: k, c: col(4 + i % 5), pts: pts(s => s.ot[k]), w: 1 }))] });
+  chart("c-use", { ...common, unit: " %", max: 100, bands: bands(["busy"]), series: [
+    { n: "CPU", c: col(1), pts: pts(s => s.cpu) }, { n: "GPU", c: col(2), pts: pts(s => s.gl) }, { n: "RAM", c: col(4), pts: pts(s => s.ram) }, { n: "VRAM", c: col(5), pts: pts(s => s.gmp), w: 1 }] });
+  chart("c-clk", { ...common, unit: " MHz", hide: "w-clk", series: [{ n: "CPU (media de núcleos)", c: col(1), pts: pts(s => s.cc) }, { n: "GPU", c: col(2), pts: pts(s => s.gc) }] });
+  chart("c-pow", { ...common, unit: " W", hide: "w-pow", series: [{ n: "CPU", c: col(1), pts: pts(s => s.cw) }, { n: "GPU", c: col(2), pts: pts(s => s.gw) }] });
+  chart("c-fan", { ...common, unit: " rpm", hide: "w-fan", series: fans.map((k, i) => ({ n: k, c: col(1 + i % 8), pts: pts(s => s.fan[k]) })) });
+  chart("c-net", { ...common, unit: " ms", hide: "w-net", series: [{ n: "Ping a " + (D.pingHost || ""), c: col(3), pts: pts(s => s.ping) }] });
+  chart("c-traf", { ...common, unit: " KB/s", series: [{ n: "Bajada", c: col(6), pts: pts(s => s.nrx) }, { n: "Subida", c: col(5), pts: pts(s => s.ntx) }] });
+  chart("c-disk", { ...common, unit: " MB/s", series: [{ n: "Lectura", c: col(6), pts: pts(s => s.dr) }, { n: "Escritura", c: col(5), pts: pts(s => s.dw) }] });
+}
 </script>
 </body>
 </html>
